@@ -84,14 +84,14 @@ public class ReservationController {
         ReservationDTO dto = new ReservationDTO();
 
         dto.setReservationId(r.getReservationId());
-        dto.setVehicleId(r.getVehicle().getVehicleId());
-        dto.setSlotId(r.getParkingSlot().getSlotId());
+        dto.setVehicleId(r.getVehicle() != null ? r.getVehicle().getVehicleId() : null);
+        dto.setSlotId(r.getParkingSlot() != null ? r.getParkingSlot().getSlotId() : null);
         dto.setStatus(r.getStatus());
         dto.setReservationTime(r.getReservationTime());
         dto.setStartTime(r.getStartTime());
         dto.setEndTime(r.getEndTime());
-        dto.setSlotNumber(r.getParkingSlot().getSlotNumber());
-        dto.setVehicleNumber(r.getVehicle().getVehicleNumber());
+        dto.setSlotNumber(r.getParkingSlot() != null ? r.getParkingSlot().getSlotNumber() : null);
+        dto.setVehicleNumber(r.getVehicle() != null ? r.getVehicle().getVehicleNumber() : null);
 
         return dto;
     }

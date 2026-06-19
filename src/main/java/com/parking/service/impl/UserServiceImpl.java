@@ -53,6 +53,7 @@ public class UserServiceImpl implements UserService {
                         if (tx.getBilling() != null) {
                             Billing bill = tx.getBilling();
                             paymentRepository.findByBilling(bill).ifPresent(paymentRepository::delete);
+                            tx.setBilling(null);
                             billingRepository.delete(bill);
                         }
                     }
@@ -77,6 +78,16 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
         user.setStatus("INACTIVE");
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User updateUser(Long id, User updated) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
+        user.setUsername(updated.getUsername());
+        user.setEmail(updated.getEmail());
+        user.setRole(updated.getRole());
         return userRepository.save(user);
     }
 }

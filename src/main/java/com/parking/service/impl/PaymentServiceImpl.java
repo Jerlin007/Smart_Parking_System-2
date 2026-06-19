@@ -25,7 +25,7 @@ public class PaymentServiceImpl implements PaymentService {
         Billing billing = billingRepository.findById(billingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Billing not found"));
 
-        if (billing.getPaymentStatus().equals("PAID")) {
+        if ("PAID".equals(billing.getPaymentStatus())) {
             throw new RuntimeException("Already paid");
         }
 

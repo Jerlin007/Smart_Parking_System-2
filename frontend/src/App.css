@@ -1,0 +1,4 @@
+/* Minimal custom styles - Tailwind handles most styling */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

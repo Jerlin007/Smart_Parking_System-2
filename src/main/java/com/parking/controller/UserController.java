@@ -95,6 +95,17 @@ public class UserController {
         return toDTO(userService.deactivateUser(id));
     }
 
+    @PutMapping("/{id}")
+    public UserResponseDTO updateUser(@PathVariable Long id, @Valid @RequestBody UserDTO dto) {
+        User user = User.builder()
+                .username(dto.getUsername())
+                .email(dto.getEmail())
+                .role(dto.getRole())
+                .build();
+
+        return toDTO(userService.updateUser(id, user));
+    }
+
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable Long id) {
         if (!securityHelper.isAdmin()) {

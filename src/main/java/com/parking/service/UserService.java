@@ -17,4 +17,6 @@ public interface UserService {
     User activateUser(Long id);
 
     User deactivateUser(Long id);
+
+    User updateUser(Long id, User updated);
 }
