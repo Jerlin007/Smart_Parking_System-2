@@ -13,4 +13,8 @@ public interface UserService {
     List<User> getAllUsers();
 
     void deleteUser(Long id);
+
+    User activateUser(Long id);
+
+    User deactivateUser(Long id);
 }

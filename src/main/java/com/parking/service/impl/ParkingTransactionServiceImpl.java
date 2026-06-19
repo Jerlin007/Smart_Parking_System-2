@@ -107,4 +107,9 @@ public class ParkingTransactionServiceImpl implements ParkingTransactionService 
     public List<ParkingTransaction> getTransactionsByUser(User user) {
         return transactionRepository.findByUser(user);
     }
+
+    @Override
+    public List<ParkingTransaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
 }

@@ -12,5 +12,7 @@ public interface ParkingLotService {
 
     List<ParkingLot> getAllLots();
 
+    ParkingLot updateLot(Long id, ParkingLot lot);
+
     void deleteLot(Long id);
 }

@@ -10,6 +10,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -41,6 +42,8 @@ public class AuthController {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword())) // ✅ FIX
                 .role(request.getRole())
+                .status("ACTIVE")
+                .createdDate(LocalDateTime.now())
                 .build();
 
         userRepository.save(user);

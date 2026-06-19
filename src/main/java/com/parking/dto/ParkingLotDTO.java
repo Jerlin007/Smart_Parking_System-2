@@ -18,4 +18,16 @@ public class ParkingLotDTO {
     private String location;
 
     private Integer totalSlots;
+
+    private Integer carSlots;
+
+    private Integer bikeSlots;
+
+    private Integer evSlots;
+
+    private long availableSlots;
+
+    private long occupiedSlots;
+
+    private long reservedSlots;
 }

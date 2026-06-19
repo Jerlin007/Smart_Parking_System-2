@@ -1,5 +1,6 @@
 package com.parking.controller;
 
+import com.parking.dto.BillingDTO;
 import com.parking.entity.Billing;
 import com.parking.entity.User;
 import com.parking.enums.Role;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SecurityRequirement(name = "BearerAuth")
 @Tag(name = "Billing APIs", description = "Billing generation and retrieval")
@@ -27,28 +29,47 @@ public class BillingController {
     private final UserRepository userRepository;
 
     @PostMapping("/generate/{transactionId}")
-    public Billing generateBill(@PathVariable Long transactionId) {
+    public BillingDTO generateBill(@PathVariable Long transactionId) {
         if (!securityHelper.isAdmin()) {
             throw new RuntimeException("Only admins can generate bills");
         }
-        return billingService.generateBill(transactionId);
+        return toDTO(billingService.generateBill(transactionId));
     }
 
     @GetMapping("/my")
-    public List<Billing> getMyBills() {
+    public List<BillingDTO> getMyBills() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return billingService.getBillsByUser(user);
+        return billingService.getBillsByUser(user)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping
-    public List<Billing> getAllBills() {
-        return billingService.getAllBills();
+    public List<BillingDTO> getAllBills() {
+        return billingService.getAllBills()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public Billing getBill(@PathVariable Long id) {
-        return billingService.getBill(id);
+    public BillingDTO getBill(@PathVariable Long id) {
+        return toDTO(billingService.getBill(id));
+    }
+
+    private BillingDTO toDTO(Billing b) {
+        return new BillingDTO(
+                b.getBillingId(),
+                b.getTransaction() != null ? b.getTransaction().getTransactionId() : null,
+                b.getRatePerHour(),
+                b.getTotalAmount(),
+                b.getPaymentStatus(),
+                b.getTransaction() != null ? b.getTransaction().getEntryTime() : null,
+                b.getTransaction() != null ? b.getTransaction().getExitTime() : null,
+                b.getTransaction() != null ? b.getTransaction().getDuration() : null
+        );
     }
 }

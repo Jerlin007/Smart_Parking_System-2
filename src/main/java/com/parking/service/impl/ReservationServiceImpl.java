@@ -3,6 +3,7 @@ package com.parking.service.impl;
 import com.parking.entity.*;
 import com.parking.enums.ReservationStatus;
 import com.parking.enums.SlotStatus;
+import com.parking.enums.SlotType;
 import com.parking.exception.ResourceNotFoundException;
 import com.parking.exception.SlotNotAvailableException;
 import com.parking.repository.*;
@@ -36,6 +37,18 @@ public class ReservationServiceImpl implements ReservationService {
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new SlotNotAvailableException("Slot not available");
+        }
+
+        String vehicleType = vehicle.getVehicleType();
+        SlotType requiredSlotType;
+        try {
+            requiredSlotType = SlotType.valueOf(vehicleType.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid vehicle type: " + vehicleType);
+        }
+
+        if (slot.getSlotType() != requiredSlotType) {
+            throw new RuntimeException("Slot type " + slot.getSlotType() + " does not match vehicle type " + vehicleType);
         }
 
         Reservation reservation = Reservation.builder()

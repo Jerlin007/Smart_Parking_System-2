@@ -15,8 +15,9 @@ public class ParkingSlotDTO {
 
     private Long slotId;
 
-    // 🔥 IMPORTANT: This fixes lot_id mapping
     private Long lotId;
+
+    private String lotName;
 
     @NotBlank(message = "Slot number is required")
     private String slotNumber;

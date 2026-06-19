@@ -13,15 +13,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @SecurityRequirement(name = "BearerAuth")
 @Tag(
-	    name = "User Management APIs",
-	    description = "APIs for creating, updating, fetching and deleting users"
-	)
+        name = "User Management APIs",
+        description = "APIs for creating, updating, fetching and deleting users"
+    )
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -39,27 +40,19 @@ public class UserController {
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .role(dto.getRole())
+                .status("ACTIVE")
+                .createdDate(LocalDateTime.now())
                 .build();
 
         User saved = userRepository.save(user);
 
-        return new UserResponseDTO(
-                saved.getUserId(),
-                saved.getUsername(),
-                saved.getEmail(),
-                saved.getRole()
-        );
+        return toDTO(saved);
     }
 
     @GetMapping("/me")
     public UserResponseDTO getMyProfile() {
         User u = securityHelper.getCurrentUser();
-        return new UserResponseDTO(
-                u.getUserId(),
-                u.getUsername(),
-                u.getEmail(),
-                u.getRole()
-        );
+        return toDTO(u);
     }
 
     @GetMapping
@@ -70,12 +63,7 @@ public class UserController {
 
         return userRepository.findAll()
                 .stream()
-                .map(u -> new UserResponseDTO(
-                        u.getUserId(),
-                        u.getUsername(),
-                        u.getEmail(),
-                        u.getRole()
-                ))
+                .map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -88,37 +76,23 @@ public class UserController {
         User u = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new UserResponseDTO(
-                u.getUserId(),
-                u.getUsername(),
-                u.getEmail(),
-                u.getRole()
-        );
+        return toDTO(u);
     }
 
-    @PutMapping("/{id}")
-    public UserResponseDTO updateUser(@PathVariable Long id, @RequestBody UserResponseDTO dto) {
+    @PutMapping("/{id}/activate")
+    public UserResponseDTO activateUser(@PathVariable Long id) {
         if (!securityHelper.isAdmin()) {
-            throw new RuntimeException("Only admins can update users");
+            throw new RuntimeException("Only admins can activate users");
         }
+        return toDTO(userService.activateUser(id));
+    }
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        if (dto.getRole() != null) {
-            user.setRole(dto.getRole());
+    @PutMapping("/{id}/deactivate")
+    public UserResponseDTO deactivateUser(@PathVariable Long id) {
+        if (!securityHelper.isAdmin()) {
+            throw new RuntimeException("Only admins can deactivate users");
         }
-
-        User updated = userRepository.save(user);
-
-        return new UserResponseDTO(
-                updated.getUserId(),
-                updated.getUsername(),
-                updated.getEmail(),
-                updated.getRole()
-        );
+        return toDTO(userService.deactivateUser(id));
     }
 
     @DeleteMapping("/{id}")
@@ -127,11 +101,23 @@ public class UserController {
             throw new RuntimeException("Only admins can delete users");
         }
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (securityHelper.getCurrentUserId().equals(id)) {
+            throw new RuntimeException("You cannot delete your own account");
+        }
 
-        userRepository.delete(user);
+        userService.deleteUser(id);
 
         return "User deleted successfully";
+    }
+
+    private UserResponseDTO toDTO(User u) {
+        return new UserResponseDTO(
+                u.getUserId(),
+                u.getUsername(),
+                u.getEmail(),
+                u.getRole(),
+                u.getStatus(),
+                u.getCreatedDate()
+        );
     }
 }

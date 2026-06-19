@@ -5,21 +5,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class BillingDTO {
 
-    private Long billId;
+    private Long billingId;
 
     private Long transactionId;
 
-    private Double amount;
-
-    private Double tax;
+    private Double ratePerHour;
 
     private Double totalAmount;
 
     private String paymentStatus;
+
+    private LocalDateTime entryTime;
+
+    private LocalDateTime exitTime;
+
+    private Double duration;
 }

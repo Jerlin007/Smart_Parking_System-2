@@ -24,6 +24,12 @@ public class ParkingLot {
 
     private Integer totalSlots;
 
+    private Integer carSlots;
+
+    private Integer bikeSlots;
+
+    private Integer evSlots;
+
     @OneToMany(mappedBy = "parkingLot",
             cascade = CascadeType.ALL)
     private List<ParkingSlot> parkingSlots;

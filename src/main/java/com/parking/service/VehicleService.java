@@ -17,5 +17,7 @@ public interface VehicleService {
 
     List<Vehicle> getVehiclesByUser(User user);
 
+    Vehicle updateVehicle(Long id, Vehicle vehicle);
+
     void deleteVehicle(Long id);
 }

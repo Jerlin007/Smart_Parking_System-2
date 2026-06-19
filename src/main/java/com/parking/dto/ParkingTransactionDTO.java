@@ -18,7 +18,11 @@ public class ParkingTransactionDTO {
 
     private Long vehicleId;
 
+    private String vehicleNumber;
+
     private Long slotId;
+
+    private String slotNumber;
 
     private LocalDateTime entryTime;
 

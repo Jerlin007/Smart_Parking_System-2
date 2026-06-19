@@ -29,4 +29,12 @@ public interface ParkingSlotRepository
     List<ParkingSlot> findByFloorNumber(Integer floorNumber);
 
     long countByStatus(SlotStatus status);
+
+    long countByParkingLotAndStatus(ParkingLot parkingLot, SlotStatus status);
+
+    List<ParkingSlot> findByParkingLot(ParkingLot parkingLot);
+
+    List<ParkingSlot> findByParkingLotAndSlotTypeAndStatus(ParkingLot parkingLot, SlotType slotType, SlotStatus status);
+
+    List<ParkingSlot> findByParkingLotAndStatus(ParkingLot parkingLot, SlotStatus status);
 }

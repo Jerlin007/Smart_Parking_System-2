@@ -14,4 +14,6 @@ public interface ParkingTransactionService {
     ParkingTransaction getTransaction(Long id);
 
     List<ParkingTransaction> getTransactionsByUser(User user);
+
+    List<ParkingTransaction> getAllTransactions();
 }

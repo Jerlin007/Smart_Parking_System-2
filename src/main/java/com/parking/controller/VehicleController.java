@@ -4,6 +4,7 @@ import com.parking.dto.VehicleDTO;
 import com.parking.entity.User;
 import com.parking.entity.Vehicle;
 import com.parking.enums.Role;
+import com.parking.enums.SlotType;
 import com.parking.repository.UserRepository;
 import com.parking.service.VehicleService;
 
@@ -13,15 +14,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @SecurityRequirement(name = "BearerAuth")
 @Tag(
-	    name = "Vehicle Management APIs",
-	    description = "APIs for managing vehicle registration and vehicle details"
-	)
+        name = "Vehicle Management APIs",
+        description = "APIs for managing vehicle registration and vehicle details"
+    )
 @RestController
 @RequestMapping("/api/vehicles")
 @RequiredArgsConstructor
@@ -33,6 +35,8 @@ public class VehicleController {
     @PostMapping
     public VehicleDTO addVehicle(
             @Valid @RequestBody VehicleDTO dto) {
+
+        validateVehicleType(dto.getVehicleType());
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
@@ -93,6 +97,34 @@ public class VehicleController {
                 .collect(Collectors.toList());
     }
 
+    @PutMapping("/{id}")
+    public VehicleDTO updateVehicle(
+            @PathVariable Long id,
+            @Valid @RequestBody VehicleDTO dto) {
+
+        validateVehicleType(dto.getVehicleType());
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Vehicle existing = vehicleService.getVehicle(id);
+
+        if (currentUser.getRole() != Role.ROLE_ADMIN &&
+            (existing.getUser() == null || !existing.getUser().getUserId().equals(currentUser.getUserId()))) {
+            throw new RuntimeException("You can only update your own vehicles");
+        }
+
+        Vehicle updated = Vehicle.builder()
+                .vehicleNumber(dto.getVehicleNumber())
+                .vehicleType(dto.getVehicleType())
+                .ownerName(dto.getOwnerName())
+                .mobileNumber(dto.getMobileNumber())
+                .build();
+
+        return convertToDTO(vehicleService.updateVehicle(id, updated));
+    }
+
     @DeleteMapping("/{id}")
     public String deleteVehicle(
             @PathVariable Long id) {
@@ -124,5 +156,13 @@ public class VehicleController {
                 vehicle.getMobileNumber(),
                 vehicle.getUser() != null ? vehicle.getUser().getUserId() : null
         );
+    }
+
+    private void validateVehicleType(String vehicleType) {
+        boolean valid = Arrays.stream(SlotType.values())
+                .anyMatch(t -> t.name().equalsIgnoreCase(vehicleType));
+        if (!valid) {
+            throw new RuntimeException("Invalid vehicle type: " + vehicleType + ". Allowed: CAR, BIKE, EV");
+        }
     }
 }

@@ -12,44 +12,29 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class VehicleServiceImpl
-        implements VehicleService {
+public class VehicleServiceImpl implements VehicleService {
 
     private final VehicleRepository vehicleRepository;
 
     @Override
-    public Vehicle saveVehicle(
-            Vehicle vehicle) {
-
+    public Vehicle saveVehicle(Vehicle vehicle) {
         return vehicleRepository.save(vehicle);
     }
 
     @Override
-    public Vehicle getVehicle(
-            Long id) {
-
+    public Vehicle getVehicle(Long id) {
         return vehicleRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Vehicle not found with id : "
-                                        + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id : " + id));
     }
 
     @Override
-    public Vehicle getByVehicleNumber(
-            String vehicleNumber) {
-
-        return vehicleRepository
-                .findByVehicleNumber(vehicleNumber)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Vehicle not found with number : "
-                                        + vehicleNumber));
+    public Vehicle getByVehicleNumber(String vehicleNumber) {
+        return vehicleRepository.findByVehicleNumber(vehicleNumber)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with number : " + vehicleNumber));
     }
 
     @Override
     public List<Vehicle> getAllVehicles() {
-
         return vehicleRepository.findAll();
     }
 
@@ -59,16 +44,19 @@ public class VehicleServiceImpl
     }
 
     @Override
-    public void deleteVehicle(
-            Long id) {
+    public Vehicle updateVehicle(Long id, Vehicle updated) {
+        Vehicle vehicle = getVehicle(id);
+        vehicle.setVehicleNumber(updated.getVehicleNumber());
+        vehicle.setVehicleType(updated.getVehicleType());
+        vehicle.setOwnerName(updated.getOwnerName());
+        vehicle.setMobileNumber(updated.getMobileNumber());
+        return vehicleRepository.save(vehicle);
+    }
 
-        Vehicle vehicle =
-                vehicleRepository.findById(id)
-                        .orElseThrow(() ->
-                                new ResourceNotFoundException(
-                                        "Vehicle not found with id : "
-                                                + id));
-
+    @Override
+    public void deleteVehicle(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found with id : " + id));
         vehicleRepository.delete(vehicle);
     }
 }

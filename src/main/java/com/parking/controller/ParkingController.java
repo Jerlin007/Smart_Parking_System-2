@@ -75,6 +75,22 @@ public class ParkingController {
                 .collect(Collectors.toList());
     }
 
+    @GetMapping("/all")
+    public List<ParkingTransactionDTO> getAllTransactions() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (currentUser.getRole() != com.parking.enums.Role.ROLE_ADMIN) {
+            throw new RuntimeException("Only admins can view all transactions");
+        }
+
+        return parkingService.getAllTransactions()
+                .stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
     @GetMapping("/reserved-slots")
     public List<Map<String, Object>> getMyReservedSlots() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -100,11 +116,12 @@ public class ParkingController {
     }
 
     private ParkingTransactionDTO convertToDTO(ParkingTransaction tx) {
-
         return new ParkingTransactionDTO(
                 tx.getTransactionId(),
                 tx.getVehicle() != null ? tx.getVehicle().getVehicleId() : null,
+                tx.getVehicle() != null ? tx.getVehicle().getVehicleNumber() : null,
                 tx.getParkingSlot() != null ? tx.getParkingSlot().getSlotId() : null,
+                tx.getParkingSlot() != null ? tx.getParkingSlot().getSlotNumber() : null,
                 tx.getEntryTime(),
                 tx.getExitTime(),
                 tx.getDuration(),
