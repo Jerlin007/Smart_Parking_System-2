@@ -1,0 +1,16 @@
+HELP.md
+.git/
+.github/
+.gitattributes
+.gitignore
+.settings/
+.vscode/
+.classpath
+.project
+bin/
+frontend/
+node_modules/
+target/
+*.md
+*.log
+.DS_Store

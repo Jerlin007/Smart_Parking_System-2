@@ -9,6 +9,14 @@ import com.parking.repository.ReservationRepository;
 import com.parking.repository.UserRepository;
 import com.parking.service.ParkingTransactionService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +34,7 @@ import org.springframework.validation.annotation.Validated;
 @RestController
 @RequestMapping("/api/parking")
 @RequiredArgsConstructor
+@Tag(name = "Vehicle Entry Exit APIs", description = "Endpoints for managing vehicle entry, exit, and parking transactions with automatic duration calculation and slot status updates")
 public class ParkingController {
 
     private final ParkingTransactionService parkingService;
@@ -33,9 +42,16 @@ public class ParkingController {
     private final ReservationRepository reservationRepository;
 
     @PostMapping("/entry")
+    @Operation(summary = "Vehicle entry", description = "Registers a vehicle entering the parking lot. Creates an active transaction, updates slot status to OCCUPIED, and validates vehicle number and slot availability.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Vehicle entry recorded",
+                    content = @Content(schema = @Schema(implementation = ParkingTransactionDTO.class),
+                            examples = @ExampleObject(value = "{\n  \"transactionId\": 1,\n  \"vehicleId\": 1,\n  \"vehicleNumber\": \"KA01AB1234\",\n  \"slotId\": 1,\n  \"slotNumber\": \"A-01\",\n  \"entryTime\": \"2025-01-15T10:30:00\",\n  \"exitTime\": null,\n  \"duration\": null,\n  \"status\": \"ACTIVE\"\n}"))),
+            @ApiResponse(responseCode = "400", description = "Slot not available or invalid vehicle")
+    })
     public ParkingTransactionDTO vehicleEntry(
-            @RequestParam @NotBlank String vehicleNumber,
-            @RequestParam @NotNull Long slotId) {
+            @Parameter(description = "License plate number of the vehicle", example = "KA01AB1234", required = true) @RequestParam @NotBlank String vehicleNumber,
+            @Parameter(description = "ID of the parking slot to occupy", example = "1", required = true) @RequestParam @NotNull Long slotId) {
 
         ParkingTransaction tx =
                 parkingService.vehicleEntry(vehicleNumber, slotId);
@@ -44,22 +60,38 @@ public class ParkingController {
     }
 
     @PostMapping("/exit")
+    @Operation(summary = "Vehicle exit", description = "Processes a vehicle exiting the parking lot. Calculates parking duration in hours, marks transaction as COMPLETED, frees the slot (status to AVAILABLE), and auto-generates a billing record.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Vehicle exit processed with billing generated",
+                    content = @Content(schema = @Schema(implementation = ParkingTransactionDTO.class),
+                            examples = @ExampleObject(value = "{\n  \"transactionId\": 1,\n  \"vehicleId\": 1,\n  \"vehicleNumber\": \"KA01AB1234\",\n  \"slotId\": 1,\n  \"slotNumber\": \"A-01\",\n  \"entryTime\": \"2025-01-15T10:30:00\",\n  \"exitTime\": \"2025-01-15T12:30:00\",\n  \"duration\": 2.0,\n  \"status\": \"COMPLETED\"\n}"))),
+            @ApiResponse(responseCode = "404", description = "Transaction not found")
+    })
     public ParkingTransactionDTO vehicleExit(
-            @RequestParam @NotNull Long transactionId) {
+            @Parameter(description = "ID of the active transaction to close", example = "1", required = true) @RequestParam @NotNull Long transactionId) {
 
         return convertToDTO(
                 parkingService.vehicleExit(transactionId));
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get transaction by ID", description = "Returns details of a specific parking transaction including entry/exit times and duration.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Transaction found"),
+            @ApiResponse(responseCode = "404", description = "Transaction not found")
+    })
     public ParkingTransactionDTO getTransaction(
-            @PathVariable Long id) {
+            @Parameter(description = "Transaction ID", example = "1", required = true) @PathVariable Long id) {
 
         return convertToDTO(
                 parkingService.getTransaction(id));
     }
 
     @GetMapping("/my")
+    @Operation(summary = "Get my transactions", description = "Returns all parking transactions for the currently authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of user's transactions returned")
+    })
     public List<ParkingTransactionDTO> getMyTransactions() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
@@ -72,6 +104,11 @@ public class ParkingController {
     }
 
     @GetMapping("/all")
+    @Operation(summary = "Get all transactions", description = "Retrieves all parking transactions. Admin-only endpoint.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of all transactions returned"),
+            @ApiResponse(responseCode = "403", description = "Only admins can view all transactions")
+    })
     public List<ParkingTransactionDTO> getAllTransactions() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User currentUser = userRepository.findByUsername(username)
@@ -88,6 +125,10 @@ public class ParkingController {
     }
 
     @GetMapping("/reserved-slots")
+    @Operation(summary = "Get my reserved slots", description = "Returns the currently authenticated user's confirmed reservations with slot and vehicle details.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of reserved slots returned")
+    })
     public List<Map<String, Object>> getMyReservedSlots() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)

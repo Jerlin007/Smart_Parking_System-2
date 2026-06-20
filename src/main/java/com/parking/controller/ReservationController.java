@@ -6,6 +6,14 @@ import com.parking.entity.User;
 import com.parking.repository.UserRepository;
 import com.parking.service.ReservationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -19,17 +27,25 @@ import org.springframework.validation.annotation.Validated;
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor
+@Tag(name = "Reservation Management APIs", description = "Endpoints for creating, viewing, and cancelling parking slot reservations")
 public class ReservationController {
 
     private final ReservationService reservationService;
     private final UserRepository userRepository;
 
     @PostMapping
+    @Operation(summary = "Create a new reservation", description = "Books a parking slot for a vehicle. Optionally specify start and end times (ISO format: yyyy-MM-dd'T'HH:mm:ss). If not provided, defaults are used. The slot status is updated to RESERVED upon successful creation.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reservation created successfully",
+                    content = @Content(schema = @Schema(implementation = ReservationDTO.class),
+                            examples = @ExampleObject(value = "{\n  \"reservationId\": 1,\n  \"vehicleId\": 1,\n  \"slotId\": 1,\n  \"status\": \"CONFIRMED\",\n  \"reservationTime\": \"2025-01-15T10:30:00\",\n  \"startTime\": \"2025-01-15T10:30:00\",\n  \"endTime\": \"2025-01-15T12:30:00\",\n  \"slotNumber\": \"A-01\",\n  \"vehicleNumber\": \"KA01AB1234\"\n}"))),
+            @ApiResponse(responseCode = "400", description = "Slot not available or invalid parameters")
+    })
     public ReservationDTO createReservation(
-            @RequestParam @NotNull Long vehicleId,
-            @RequestParam @NotNull Long slotId,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime) {
+            @Parameter(description = "ID of the vehicle to reserve", example = "1", required = true) @RequestParam @NotNull Long vehicleId,
+            @Parameter(description = "ID of the parking slot to reserve", example = "1", required = true) @RequestParam @NotNull Long slotId,
+            @Parameter(description = "Reservation start time in ISO format (optional)", example = "2025-01-15T10:30:00") @RequestParam(required = false) String startTime,
+            @Parameter(description = "Reservation end time in ISO format (optional)", example = "2025-01-15T12:30:00") @RequestParam(required = false) String endTime) {
 
         java.time.LocalDateTime start = startTime != null ? java.time.LocalDateTime.parse(startTime) : null;
         java.time.LocalDateTime end = endTime != null ? java.time.LocalDateTime.parse(endTime) : null;
@@ -40,6 +56,10 @@ public class ReservationController {
     }
 
     @GetMapping("/my")
+    @Operation(summary = "Get my reservations", description = "Returns all reservations made by the currently authenticated user.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of user's reservations returned")
+    })
     public List<ReservationDTO> getMyReservations() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
@@ -52,12 +72,21 @@ public class ReservationController {
     }
 
     @GetMapping("/{id}")
-    public ReservationDTO getReservation(@PathVariable Long id) {
+    @Operation(summary = "Get reservation by ID", description = "Returns details of a specific reservation by its ID.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reservation found"),
+            @ApiResponse(responseCode = "404", description = "Reservation not found")
+    })
+    public ReservationDTO getReservation(@Parameter(description = "Reservation ID", example = "1", required = true) @PathVariable Long id) {
 
         return mapToDTO(reservationService.getReservationById(id));
     }
 
     @GetMapping
+    @Operation(summary = "Get all reservations", description = "Retrieves a list of all reservations in the system.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "List of all reservations returned")
+    })
     public List<ReservationDTO> getAllReservations() {
 
         return reservationService.getAllReservations()
@@ -67,7 +96,13 @@ public class ReservationController {
     }
 
     @PutMapping("/cancel/{id}")
-    public ReservationDTO cancelReservation(@PathVariable Long id) {
+    @Operation(summary = "Cancel a reservation", description = "Cancels a reservation by its ID. The associated parking slot status is updated back to AVAILABLE.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Reservation cancelled",
+                    content = @Content(schema = @Schema(implementation = ReservationDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Reservation not found")
+    })
+    public ReservationDTO cancelReservation(@Parameter(description = "Reservation ID to cancel", example = "1", required = true) @PathVariable Long id) {
 
         return mapToDTO(reservationService.cancelReservation(id));
     }

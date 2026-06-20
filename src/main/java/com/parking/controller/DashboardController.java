@@ -5,6 +5,12 @@ import com.parking.entity.*;
 import com.parking.enums.*;
 import com.parking.repository.*;
 import com.parking.security.SecurityHelper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
+@Tag(name = "Dashboard Analytics APIs", description = "Endpoints for admin and customer dashboards providing statistics on revenue, slot occupancy, reservations, and user activity")
 public class DashboardController {
 
     private final UserRepository userRepository;
@@ -27,6 +34,11 @@ public class DashboardController {
     private final SecurityHelper securityHelper;
 
     @GetMapping("/admin/stats")
+    @Operation(summary = "Get admin dashboard statistics", description = "Returns comprehensive system statistics for the admin dashboard including total users, vehicles, slot utilization (available/occupied/reserved), revenue data, monthly revenue trends, and vehicle type distribution.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Admin dashboard stats retrieved",
+                    content = @Content(schema = @Schema(implementation = AdminDashboardDTO.class)))
+    })
     public AdminDashboardDTO getAdminStats() {
         List<User> users = userRepository.findAll();
         List<Vehicle> vehicles = vehicleRepository.findAll();
@@ -79,6 +91,11 @@ public class DashboardController {
     }
 
     @GetMapping("/customer/stats")
+    @Operation(summary = "Get customer dashboard statistics", description = "Returns personalized statistics for the currently authenticated customer including their vehicles, reservations, active transactions, pending bills, and available slot counts.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Customer dashboard stats retrieved",
+                    content = @Content(schema = @Schema(implementation = CustomerDashboardDTO.class)))
+    })
     public CustomerDashboardDTO getCustomerStats() {
         User user = securityHelper.getCurrentUser();
 
