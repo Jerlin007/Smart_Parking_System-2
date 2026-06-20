@@ -2,6 +2,7 @@ package com.parking.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.*;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +57,28 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 response,
                 HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse>
+    handleBadCredentials(
+            BadCredentialsException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse response =
+                ErrorResponse.builder()
+                        .timestamp(
+                                LocalDateTime.now())
+                        .status(401)
+                        .error("Unauthorized")
+                        .message(ex.getMessage())
+                        .path(
+                                request.getRequestURI())
+                        .build();
+
+        return new ResponseEntity<>(
+                response,
+                HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(

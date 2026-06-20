@@ -38,7 +38,7 @@ export default function AdminPayments() {
     { header: 'Payment ID', accessor: 'paymentId', sortable: true },
     { header: 'Bill ID', accessor: 'billingId', cell: (row) => row.billingId || '—' },
     { header: 'Amount', accessor: 'amount', cell: (row) => `₹${row.amount || 0}` },
-    { header: 'Method', accessor: 'paymentMethod', cell: (row) => <StatusBadge status={row.paymentMethod} /> },
+    { header: 'Method', accessor: 'paymentMethod', cell: (row) => <StatusBadge status={row.paymentMethod || '—'} /> },
     { header: 'Status', accessor: 'status', cell: (row) => <StatusBadge status={row.status === 'SUCCESS' ? 'SUCCESS' : row.status || '—'} /> },
     { header: 'Date', accessor: 'paymentTime', cell: (row) => row.paymentTime ? new Date(row.paymentTime).toLocaleString() : '—' },
   ];

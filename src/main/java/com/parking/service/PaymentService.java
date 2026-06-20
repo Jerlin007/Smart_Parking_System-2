@@ -1,16 +1,19 @@
 package com.parking.service;
 
+import com.parking.dto.PaymentDTO;
 import com.parking.entity.Payment;
 import com.parking.entity.User;
 import java.util.List;
 
 public interface PaymentService {
 
-    Payment makePayment(Long billingId, String method);
+    PaymentDTO makePayment(Long billingId, String method);
 
-    Payment getPayment(Long paymentId);
+    Payment getPaymentEntity(Long paymentId);
 
-    List<Payment> getAllPayments();
+    PaymentDTO getPayment(Long paymentId);
 
-    List<Payment> getPaymentsByUser(User user);
+    List<PaymentDTO> getAllPayments();
+
+    List<PaymentDTO> getPaymentsByUser(User user);
 }

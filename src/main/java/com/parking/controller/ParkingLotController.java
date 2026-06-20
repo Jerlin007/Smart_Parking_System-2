@@ -7,20 +7,12 @@ import com.parking.repository.ParkingSlotRepository;
 import com.parking.security.SecurityHelper;
 import com.parking.service.ParkingLotService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-@SecurityRequirement(name = "BearerAuth")
-@Tag(
-        name = "Parking Lot Management APIs",
-        description = "APIs for managing parking lots, locations and capacity"
-    )
 @RestController
 @RequestMapping("/api/lots")
 @RequiredArgsConstructor

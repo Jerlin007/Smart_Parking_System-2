@@ -9,14 +9,12 @@ import com.parking.repository.ReservationRepository;
 import com.parking.repository.UserRepository;
 import com.parking.service.ParkingTransactionService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.validation.annotation.Validated;
 
-@SecurityRequirement(name = "BearerAuth")
 @Validated
-@Tag(name = "Parking Management", description = "Entry, Exit, Slot management")
 @RestController
 @RequestMapping("/api/parking")
 @RequiredArgsConstructor

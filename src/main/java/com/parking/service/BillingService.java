@@ -1,16 +1,19 @@
 package com.parking.service;
 
+import com.parking.dto.BillingDTO;
 import com.parking.entity.Billing;
 import com.parking.entity.User;
 import java.util.List;
 
 public interface BillingService {
 
-    Billing generateBill(Long transactionId);
+    BillingDTO generateBill(Long transactionId);
 
-    Billing getBill(Long billingId);
+    Billing getBillEntity(Long billingId);
 
-    List<Billing> getAllBills();
+    BillingDTO getBill(Long billingId);
 
-    List<Billing> getBillsByUser(User user);
+    List<BillingDTO> getAllBills();
+
+    List<BillingDTO> getBillsByUser(User user);
 }

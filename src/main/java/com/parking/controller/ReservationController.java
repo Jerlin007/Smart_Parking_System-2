@@ -6,23 +6,16 @@ import com.parking.entity.User;
 import com.parking.repository.UserRepository;
 import com.parking.service.ReservationService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.validation.annotation.Validated;
 
-@SecurityRequirement(name = "BearerAuth")
 @Validated
-@Tag(
-	    name = "Reservation Management APIs",
-	    description = "APIs for creating, cancelling and viewing parking reservations"
-	)
 @RestController
 @RequestMapping("/api/reservations")
 @RequiredArgsConstructor

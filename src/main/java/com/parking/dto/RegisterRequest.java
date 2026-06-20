@@ -1,6 +1,5 @@
 package com.parking.dto;
 
-import com.parking.enums.Role;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
@@ -18,6 +17,4 @@ public class RegisterRequest {
 
     @Size(min = 6)
     private String password;
-
-    private Role role;
 }

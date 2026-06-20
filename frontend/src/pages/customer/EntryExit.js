@@ -233,7 +233,7 @@ export default function EntryExit() {
               {result.duration && (
                 <div className="flex items-center gap-2 pt-2 border-t border-surface-200 dark:border-surface-700">
                   <FiClock className="h-4 w-4 text-surface-400" />
-                  <span className="text-sm text-surface-700 dark:text-surface-300">Duration: <strong>{result.duration}</strong></span>
+                  <span className="text-sm text-surface-700 dark:text-surface-300">Duration: <strong>{result.duration ? `${Math.round(result.duration * 60)} Minutes` : '—'}</strong></span>
                 </div>
               )}
             </div>

@@ -7,7 +7,6 @@ import com.parking.repository.UserRepository;
 import com.parking.security.SecurityHelper;
 import com.parking.service.UserService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,13 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-@SecurityRequirement(name = "BearerAuth")
-@Tag(
-        name = "User Management APIs",
-        description = "APIs for creating, updating, fetching and deleting users"
-    )
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -39,7 +31,7 @@ public class UserController {
                 .username(dto.getUsername())
                 .email(dto.getEmail())
                 .password(passwordEncoder.encode(dto.getPassword()))
-                .role(dto.getRole())
+                .role(Role.ROLE_CUSTOMER)
                 .status("ACTIVE")
                 .createdDate(LocalDateTime.now())
                 .build();
@@ -100,7 +92,6 @@ public class UserController {
         User user = User.builder()
                 .username(dto.getUsername())
                 .email(dto.getEmail())
-                .role(dto.getRole())
                 .build();
 
         return toDTO(userService.updateUser(id, user));

@@ -2,6 +2,7 @@ package com.parking.controller;
 
 import com.parking.dto.*;
 import com.parking.entity.User;
+import com.parking.enums.Role;
 import com.parking.repository.UserRepository;
 import com.parking.security.JwtService;
 import jakarta.validation.Valid;
@@ -12,9 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
-@Tag(name = "Authentication APIs", description = "Login & Registration")
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -40,8 +38,8 @@ public class AuthController {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword())) // ✅ FIX
-                .role(request.getRole())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.ROLE_CUSTOMER)
                 .status("ACTIVE")
                 .createdDate(LocalDateTime.now())
                 .build();

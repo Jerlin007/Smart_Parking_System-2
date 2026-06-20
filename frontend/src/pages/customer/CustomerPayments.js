@@ -47,11 +47,22 @@ export default function CustomerPayments() {
     setProcessing(true);
     try {
       const res = await paymentAPI.pay(selectedBill.billingId || selectedBill.id, paymentMethod);
+      const paymentData = res.data;
       setSuccessScreen({
-        amount: selectedBill.totalAmount,
-        method: paymentMethod,
-        paymentId: res.data?.paymentId || res.data?.id,
-        time: new Date().toLocaleString(),
+        paymentId: paymentData?.paymentId || paymentData?.id,
+        billingId: selectedBill.billingId || selectedBill.id,
+        transactionId: selectedBill.transactionId,
+        amount: paymentData?.amount || selectedBill.totalAmount,
+        paymentMethod: paymentData?.paymentMethod || paymentMethod,
+        status: paymentData?.status || 'SUCCESS',
+        paymentTime: paymentData?.paymentTime || new Date().toISOString(),
+        vehicleNumber: selectedBill.vehicleNumber,
+        vehicleType: selectedBill.vehicleType,
+        slotNumber: selectedBill.slotNumber,
+        entryTime: selectedBill.entryTime,
+        exitTime: selectedBill.exitTime,
+        duration: selectedBill.duration,
+        lotName: selectedBill.lotName,
       });
       setPayModal(false);
       toast.success('Payment successful!');
@@ -63,39 +74,130 @@ export default function CustomerPayments() {
     }
   };
 
+  const printReceipt = (payment) => {
+    const receiptContent = generateReceiptHtml(payment);
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Payment Receipt</title>
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; color: #1e293b; }
+          .receipt-card { max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+          .header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
+          .header h1 { font-size: 22px; margin: 0; color: #1e293b; letter-spacing: 1px; }
+          .header h2 { font-size: 16px; margin: 4px 0 0; color: #64748b; font-weight: 400; }
+          .section { margin-bottom: 20px; }
+          .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+          .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+          .row:last-child { border-bottom: none; }
+          .label { color: #64748b; }
+          .value { font-weight: 600; color: #1e293b; }
+          .total-row { font-size: 16px; padding: 10px 0; border-top: 2px solid #1e293b; margin-top: 8px; }
+          .total-row .value { font-size: 18px; }
+          .footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+          .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #dcfce7; color: #166534; }
+          .badge.failed { background: #fef2f2; color: #991b1b; }
+          .badge.pending { background: #fef9c3; color: #854d0e; }
+          @media print { body { padding: 20px; } .receipt-card { box-shadow: none; border: 1px solid #ccc; } }
+        </style>
+      </head>
+      <body>
+        ${receiptContent}
+        <script>window.print();<\/script>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   const downloadReceipt = (payment) => {
-    const receipt = `
-SMART PARKING SYSTEM - PAYMENT RECEIPT
-========================================
-Receipt #: ${payment.paymentId || payment.id}
-Amount: ₹${payment.amount || 0}
-Method: ${payment.paymentMethod}
-Status: ${payment.status}
-Date: ${payment.paymentTime ? new Date(payment.paymentTime).toLocaleString() : ''}
-========================================
-Thank you for using Smart Parking!
-    `.trim();
-    const blob = new Blob([receipt], { type: 'text/plain' });
+    const receiptContent = generateReceiptHtml(payment);
+    const blob = new Blob([`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Payment Receipt</title>
+        <style>
+          body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 40px; color: #1e293b; }
+          .receipt-card { max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+          .header { text-align: center; border-bottom: 2px solid #1e293b; padding-bottom: 20px; margin-bottom: 24px; }
+          .header h1 { font-size: 22px; margin: 0; color: #1e293b; letter-spacing: 1px; }
+          .header h2 { font-size: 16px; margin: 4px 0 0; color: #64748b; font-weight: 400; }
+          .section { margin-bottom: 20px; }
+          .section-title { font-size: 13px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+          .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+          .row:last-child { border-bottom: none; }
+          .label { color: #64748b; }
+          .value { font-weight: 600; color: #1e293b; }
+          .total-row { font-size: 16px; padding: 10px 0; border-top: 2px solid #1e293b; margin-top: 8px; }
+          .total-row .value { font-size: 18px; }
+          .footer { text-align: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+        </style>
+      </head>
+      <body>${receiptContent}</body>
+      </html>
+    `], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `receipt-${payment.paymentId || payment.id}.txt`;
+    a.download = `receipt-${payment.paymentId || payment.id}.html`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success('Receipt downloaded');
   };
 
+  const generateReceiptHtml = (p) => {
+    const statusClass = p.status === 'SUCCESS' || p.status === 'PAID' ? '' : p.status === 'FAILED' ? 'failed' : 'pending';
+    return `
+      <div class="receipt-card">
+        <div class="header">
+          <h1>SMART PARKING MANAGEMENT SYSTEM</h1>
+          <h2>Payment Receipt</h2>
+        </div>
+        <div class="section">
+          <div class="section-title">Receipt Information</div>
+          <div class="row"><span class="label">Receipt Number</span><span class="value">#${p.paymentId || '—'}</span></div>
+          <div class="row"><span class="label">Bill Number</span><span class="value">#${p.billingId || '—'}</span></div>
+          <div class="row"><span class="label">Transaction ID</span><span class="value">#${p.transactionId || '—'}</span></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Vehicle Information</div>
+          <div class="row"><span class="label">Vehicle Number</span><span class="value">${p.vehicleNumber || '—'}</span></div>
+          <div class="row"><span class="label">Vehicle Type</span><span class="value">${p.vehicleType || '—'}</span></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Parking Information</div>
+          <div class="row"><span class="label">Parking Lot</span><span class="value">${p.lotName || '—'}</span></div>
+          <div class="row"><span class="label">Slot Number</span><span class="value">${p.slotNumber || '—'}</span></div>
+          <div class="row"><span class="label">Entry Time</span><span class="value">${p.entryTime ? new Date(p.entryTime).toLocaleString() : '—'}</span></div>
+          <div class="row"><span class="label">Exit Time</span><span class="value">${p.exitTime ? new Date(p.exitTime).toLocaleString() : '—'}</span></div>
+          <div class="row"><span class="label">Duration</span><span class="value">${p.duration ? Math.round(p.duration * 60) + ' Minutes' : '—'}</span></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Payment Information</div>
+          <div class="row"><span class="label">Amount</span><span class="value">₹${(p.amount || 0).toFixed(2)}</span></div>
+          <div class="row"><span class="label">Payment Method</span><span class="value">${p.paymentMethod || '—'}</span></div>
+          <div class="row"><span class="label">Payment Status</span><span class="value"><span class="badge ${statusClass}">${p.status || '—'}</span></span></div>
+          <div class="row total-row"><span class="label">Payment Date</span><span class="value">${p.paymentTime ? new Date(p.paymentTime).toLocaleString() : '—'}</span></div>
+        </div>
+        <div class="footer">Thank you for using Smart Parking Management System</div>
+      </div>
+    `;
+  };
+
   const columns = [
     { header: 'Payment ID', accessor: 'paymentId', sortable: true },
     { header: 'Amount', accessor: 'amount', cell: (row) => `₹${row.amount || 0}` },
-    { header: 'Method', accessor: 'paymentMethod', cell: (row) => <StatusBadge status={row.paymentMethod} /> },
+    { header: 'Method', accessor: 'paymentMethod', cell: (row) => <StatusBadge status={row.paymentMethod || '—'} /> },
     { header: 'Status', accessor: 'status', cell: (row) => <StatusBadge status={row.status === 'SUCCESS' ? 'SUCCESS' : row.status || '—'} /> },
     { header: 'Date', accessor: 'paymentTime', cell: (row) => row.paymentTime ? new Date(row.paymentTime).toLocaleString() : '—' },
     {
-      header: 'Actions',
+      header: 'Receipt',
       accessor: 'actions',
       cell: (row) => (
-        <button onClick={(e) => { e.stopPropagation(); downloadReceipt(row); }} className="btn-ghost p-1.5 text-primary-500">
+        <button onClick={(e) => { e.stopPropagation(); printReceipt(row); }} className="btn-ghost p-1.5 text-primary-500" title="Print Receipt">
           <FiDownload className="h-3.5 w-3.5" />
         </button>
       ),
@@ -115,14 +217,19 @@ Thank you for using Smart Parking!
           <p className="text-sm text-surface-500 mb-6">Your payment has been processed successfully.</p>
           <div className="bg-surface-50 dark:bg-surface-800 rounded-lg p-4 mb-6 text-left space-y-2">
             <div className="flex justify-between"><span className="text-sm text-surface-500">Amount</span><span className="text-sm font-semibold">₹{successScreen.amount}</span></div>
-            <div className="flex justify-between"><span className="text-sm text-surface-500">Method</span><span className="text-sm">{successScreen.method}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-surface-500">Method</span><span className="text-sm">{successScreen.paymentMethod}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-surface-500">Status</span><span className="text-sm"><StatusBadge status={successScreen.status} /></span></div>
             <div className="flex justify-between"><span className="text-sm text-surface-500">Payment ID</span><span className="text-sm">#{successScreen.paymentId}</span></div>
-            <div className="flex justify-between"><span className="text-sm text-surface-500">Time</span><span className="text-sm">{successScreen.time}</span></div>
+            <div className="flex justify-between"><span className="text-sm text-surface-500">Time</span><span className="text-sm">{successScreen.paymentTime ? new Date(successScreen.paymentTime).toLocaleString() : ''}</span></div>
           </div>
           <div className="flex gap-3 justify-center">
-            <button onClick={() => { setSuccessScreen(null); downloadReceipt(successScreen); }} className="btn-secondary">
+            <button onClick={() => { printReceipt(successScreen); }} className="btn-secondary">
               <FiDownload className="h-4 w-4" />
-              Download Receipt
+              Print / PDF
+            </button>
+            <button onClick={() => { downloadReceipt(successScreen); }} className="btn-secondary">
+              <FiDownload className="h-4 w-4" />
+              Download
             </button>
             <button onClick={() => setSuccessScreen(null)} className="btn-primary">
               Continue

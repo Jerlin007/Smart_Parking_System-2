@@ -20,6 +20,8 @@ public interface ReservationRepository
 
     boolean existsByParkingSlotAndStatus(ParkingSlot slot, ReservationStatus status);
 
+    List<Reservation> findByParkingSlot(ParkingSlot slot);
+
     @Query("SELECT r FROM Reservation r WHERE r.vehicle.user = :user ORDER BY r.reservationTime DESC")
     List<Reservation> findByUser(@Param("user") User user);
 

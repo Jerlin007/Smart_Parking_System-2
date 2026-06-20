@@ -20,8 +20,8 @@ export default function ParkingSlots() {
   const [createModal, setCreateModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [form, setForm] = useState({ slotNumber: '', slotType: 'CAR', floorNumber: '', parkingLot: '', status: 'AVAILABLE' });
-  const [filters, setFilters] = useState({ status: '', type: '', floor: '', lot: '' });
+  const [form, setForm] = useState({ slotNumber: '', slotType: 'CAR', parkingLot: '', status: 'AVAILABLE' });
+  const [filters, setFilters] = useState({ status: '', type: '', lot: '' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -45,7 +45,6 @@ export default function ParkingSlots() {
   const filteredSlots = slots.filter(s => {
     if (filters.status && s.status !== filters.status) return false;
     if (filters.type && s.slotType !== filters.type) return false;
-    if (filters.floor && s.floorNumber !== parseInt(filters.floor)) return false;
     if (filters.lot && (s.lotId !== parseInt(filters.lot) && s.parkingLot?.lotId !== parseInt(filters.lot) && s.parkingLot?.id !== parseInt(filters.lot))) return false;
     return true;
   });
@@ -57,7 +56,6 @@ export default function ParkingSlots() {
       const payload = {
         slotNumber: form.slotNumber,
         slotType: form.slotType,
-        floorNumber: parseInt(form.floorNumber),
         lotId: parseInt(form.parkingLot),
       };
       await parkingSlotAPI.update(selectedSlot.id || selectedSlot.slotId, payload);
@@ -77,13 +75,12 @@ export default function ParkingSlots() {
       const payload = {
         slotNumber: form.slotNumber,
         slotType: form.slotType,
-        floorNumber: parseInt(form.floorNumber),
         lotId: parseInt(form.parkingLot),
       };
       await parkingSlotAPI.create(payload);
       toast.success('Parking slot created');
       setCreateModal(false);
-      setForm({ slotNumber: '', slotType: 'CAR', floorNumber: '', parkingLot: '', status: 'AVAILABLE' });
+      setForm({ slotNumber: '', slotType: 'CAR', parkingLot: '', status: 'AVAILABLE' });
       loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create slot');
@@ -112,7 +109,6 @@ export default function ParkingSlots() {
     setForm({
       slotNumber: slot.slotNumber || '',
       slotType: slot.slotType || 'CAR',
-      floorNumber: slot.floorNumber?.toString() || '',
       parkingLot: slot.lotId?.toString() || '',
       status: slot.status || 'AVAILABLE',
     });
@@ -131,7 +127,6 @@ export default function ParkingSlots() {
   const columns = [
     { header: 'Slot #', accessor: 'slotNumber', sortable: true },
     { header: 'Type', accessor: 'slotType', cell: (row) => <StatusBadge status={row.slotType} /> },
-    { header: 'Floor', accessor: 'floorNumber', sortable: true },
     { header: 'Status', accessor: 'status', cell: (row) => <StatusBadge status={row.status} /> },
     { header: 'Lot', accessor: 'parkingLot', cell: (row) => row.parkingLot?.lotName || row.lotName || '—' },
     {
@@ -161,7 +156,7 @@ export default function ParkingSlots() {
             <button onClick={() => setViewMode('table')} className={`p-2 ${viewMode === 'table' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-800'}`}><FiList className="h-4 w-4" /></button>
             <button onClick={() => setViewMode('grid')} className={`p-2 ${viewMode === 'grid' ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600' : 'text-surface-400 hover:bg-surface-50 dark:hover:bg-surface-800'}`}><FiGrid className="h-4 w-4" /></button>
           </div>
-          <button onClick={() => { setForm({ slotNumber: '', slotType: 'CAR', floorNumber: '', parkingLot: '', status: 'AVAILABLE' }); setCreateModal(true); }} className="btn-primary">
+          <button onClick={() => { setForm({ slotNumber: '', slotType: 'CAR', parkingLot: '', status: 'AVAILABLE' }); setCreateModal(true); }} className="btn-primary">
             <FiPlus className="h-4 w-4" />
             Add Slot
           </button>
@@ -169,7 +164,7 @@ export default function ParkingSlots() {
       </div>
 
       <div className="card p-4 mb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <select value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })} className="select-field text-sm">
             <option value="">All Status</option>
             <option value="AVAILABLE">Available</option>
@@ -182,7 +177,6 @@ export default function ParkingSlots() {
             <option value="BIKE">Bike</option>
             <option value="EV">EV</option>
           </select>
-          <input type="number" value={filters.floor} onChange={e => setFilters({ ...filters, floor: e.target.value })} className="input-field text-sm" placeholder="Floor #" />
           <select value={filters.lot} onChange={e => setFilters({ ...filters, lot: e.target.value })} className="select-field text-sm">
             <option value="">All Lots</option>
             {lots.map(lot => (
@@ -200,7 +194,7 @@ export default function ParkingSlots() {
             {filteredSlots.map(slot => (
               <div key={slot.id || slot.slotId} className={`card p-3 border-l-4 ${statusColor(slot.status)}`}>
                 <p className="text-sm font-bold text-surface-900 dark:text-white">{slot.slotNumber}</p>
-                <p className="text-xs text-surface-500">{slot.slotType} · Floor {slot.floorNumber}</p>
+                <p className="text-xs text-surface-500">{slot.slotType}</p>
                 <StatusBadge status={slot.status} />
                 <p className="text-xs text-surface-400 mt-1">{slot.parkingLot?.lotName || slot.lotName || ''}</p>
               </div>
@@ -238,10 +232,6 @@ export default function ParkingSlots() {
               <option value="EV">EV</option>
             </select>
           </div>
-          <div>
-            <label className="label">Floor Number</label>
-            <input type="number" value={form.floorNumber} onChange={e => setForm({ ...form, floorNumber: e.target.value })} className="input-field" placeholder="e.g. 1" min="0" required />
-          </div>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={() => setCreateModal(false)} className="btn-secondary">Cancel</button>
             <button onClick={handleCreate} className="btn-primary" disabled={saving}>{saving ? 'Creating...' : 'Create Slot'}</button>
@@ -271,10 +261,6 @@ export default function ParkingSlots() {
               <option value="BIKE">Bike</option>
               <option value="EV">EV</option>
             </select>
-          </div>
-          <div>
-            <label className="label">Floor Number</label>
-            <input type="number" value={form.floorNumber} onChange={e => setForm({ ...form, floorNumber: e.target.value })} className="input-field" placeholder="e.g. 1" min="0" required />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <button onClick={() => setEditModal(false)} className="btn-secondary">Cancel</button>

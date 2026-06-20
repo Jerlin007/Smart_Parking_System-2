@@ -40,7 +40,7 @@ export default function BillingReports() {
     { header: 'Transaction ID', accessor: 'transactionId', cell: (row) => row.transactionId || '—' },
     { header: 'Entry Time', accessor: 'entryTime', cell: (row) => row.entryTime ? new Date(row.entryTime).toLocaleString() : '—' },
     { header: 'Exit Time', accessor: 'exitTime', cell: (row) => row.exitTime ? new Date(row.exitTime).toLocaleString() : '—' },
-    { header: 'Duration', accessor: 'duration', cell: (row) => row.duration ? `${row.duration}h` : '—' },
+    { header: 'Duration', accessor: 'duration', cell: (row) => row.duration ? `${Math.round(row.duration * 60)} Minutes` : '—' },
     { header: 'Rate/Hour', accessor: 'ratePerHour', cell: (row) => row.ratePerHour ? `₹${row.ratePerHour}` : '—' },
     { header: 'Total', accessor: 'totalAmount', cell: (row) => row.totalAmount ? `₹${row.totalAmount}` : '—' },
     { header: 'Payment', accessor: 'paymentStatus', cell: (row) => <StatusBadge status={row.paymentStatus === 'PAID' ? 'PAID' : 'UNPAID'} /> },

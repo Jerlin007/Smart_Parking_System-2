@@ -8,7 +8,6 @@ import com.parking.enums.SlotType;
 import com.parking.repository.UserRepository;
 import com.parking.service.VehicleService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,13 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-@SecurityRequirement(name = "BearerAuth")
-@Tag(
-        name = "Vehicle Management APIs",
-        description = "APIs for managing vehicle registration and vehicle details"
-    )
 @RestController
 @RequestMapping("/api/vehicles")
 @RequiredArgsConstructor

@@ -6,7 +6,7 @@ import { FiUser, FiMail, FiLock } from 'react-icons/fi';
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'ROLE_CUSTOMER' });
+  const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -73,14 +73,6 @@ export default function Register() {
               <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-surface-400" />
               <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} className="input-field pl-9" placeholder="Min. 6 characters" minLength={6} required />
             </div>
-          </div>
-
-          <div>
-            <label className="label">Account Type</label>
-            <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} className="select-field">
-              <option value="ROLE_CUSTOMER">Customer</option>
-              <option value="ROLE_ADMIN">Admin</option>
-            </select>
           </div>
 
           <button type="submit" className="btn-primary w-full" disabled={loading}>

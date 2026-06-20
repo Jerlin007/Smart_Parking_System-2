@@ -223,7 +223,7 @@ export default function CustomerReservations() {
               </option>
               {availableSlots.map(s => (
                 <option key={s.slotId || s.id} value={s.slotId || s.id}>
-                  {s.slotNumber} — Floor {s.floorNumber} ({s.slotType})
+                  {s.slotNumber}{s.floorNumber != null ? ` — Floor ${s.floorNumber}` : ''} ({s.slotType})
                 </option>
               ))}
             </select>

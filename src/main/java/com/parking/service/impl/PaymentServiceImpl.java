@@ -1,5 +1,6 @@
 package com.parking.service.impl;
 
+import com.parking.dto.PaymentDTO;
 import com.parking.entity.*;
 import com.parking.enums.PaymentStatus;
 import com.parking.exception.ResourceNotFoundException;
@@ -7,10 +8,10 @@ import com.parking.repository.*;
 import com.parking.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -20,7 +21,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
 
     @Override
-    public Payment makePayment(Long billingId, String method) {
+    @Transactional
+    public PaymentDTO makePayment(Long billingId, String method) {
 
         Billing billing = billingRepository.findById(billingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Billing not found"));
@@ -40,28 +42,31 @@ public class PaymentServiceImpl implements PaymentService {
         billing.setPaymentStatus("PAID");
         billingRepository.save(billing);
 
-        return paymentRepository.save(payment);
+        paymentRepository.save(payment);
+
+        return paymentRepository.findPaymentDTOById(payment.getPaymentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found after save"));
     }
 
     @Override
-    public Payment getPayment(Long paymentId) {
+    public Payment getPaymentEntity(Long paymentId) {
         return paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
     }
 
     @Override
-    public List<Payment> getAllPayments() {
-        return paymentRepository.findAll();
+    public PaymentDTO getPayment(Long paymentId) {
+        return paymentRepository.findPaymentDTOById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
     }
 
     @Override
-    public List<Payment> getPaymentsByUser(User user) {
-        return paymentRepository.findAll().stream()
-                .filter(p -> p.getBilling() != null
-                        && p.getBilling().getTransaction() != null
-                        && p.getBilling().getTransaction().getVehicle() != null
-                        && p.getBilling().getTransaction().getVehicle().getUser() != null
-                        && p.getBilling().getTransaction().getVehicle().getUser().getUserId().equals(user.getUserId()))
-                .collect(Collectors.toList());
+    public List<PaymentDTO> getAllPayments() {
+        return paymentRepository.findAllPaymentDTOs();
+    }
+
+    @Override
+    public List<PaymentDTO> getPaymentsByUser(User user) {
+        return paymentRepository.findPaymentDTOsByUser(user);
     }
 }

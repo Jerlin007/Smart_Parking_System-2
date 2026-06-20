@@ -36,7 +36,7 @@ export default function Transactions() {
     { header: 'Slot', accessor: 'slotNumber', cell: (row) => row.slotNumber || '—' },
     { header: 'Entry Time', accessor: 'entryTime', cell: (row) => row.entryTime ? new Date(row.entryTime).toLocaleString() : '—' },
     { header: 'Exit Time', accessor: 'exitTime', cell: (row) => row.exitTime ? new Date(row.exitTime).toLocaleString() : '—' },
-    { header: 'Duration', accessor: 'duration', cell: (row) => row.duration ? `${row.duration}h` : '—' },
+    { header: 'Duration', accessor: 'duration', cell: (row) => row.duration ? `${Math.round(row.duration * 60)} Minutes` : '—' },
     { header: 'Status', accessor: 'status', cell: (row) => <StatusBadge status={row.status} /> },
   ];
 

@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class BillingDTO {
 
     private Long billingId;
@@ -28,4 +27,31 @@ public class BillingDTO {
     private LocalDateTime exitTime;
 
     private Double duration;
+
+    private String vehicleNumber;
+
+    private String vehicleType;
+
+    private String slotNumber;
+
+    private String lotName;
+
+    public BillingDTO(Long billingId, Long transactionId,
+                      Double ratePerHour, Double totalAmount, String paymentStatus,
+                      LocalDateTime entryTime, LocalDateTime exitTime, Double duration,
+                      String vehicleNumber, String vehicleType,
+                      String slotNumber, String lotName) {
+        this.billingId = billingId;
+        this.transactionId = transactionId;
+        this.ratePerHour = ratePerHour;
+        this.totalAmount = totalAmount;
+        this.paymentStatus = paymentStatus;
+        this.entryTime = entryTime;
+        this.exitTime = exitTime;
+        this.duration = duration;
+        this.vehicleNumber = vehicleNumber;
+        this.vehicleType = vehicleType;
+        this.slotNumber = slotNumber;
+        this.lotName = lotName;
+    }
 }

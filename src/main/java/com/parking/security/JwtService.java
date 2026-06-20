@@ -38,10 +38,13 @@ public class JwtService {
     }
 
     public boolean isTokenValid(String token) {
-
-        return getClaims(token)
-                .getExpiration()
-                .after(new Date());
+        try {
+            return getClaims(token)
+                    .getExpiration()
+                    .after(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private Claims getClaims(String token) {

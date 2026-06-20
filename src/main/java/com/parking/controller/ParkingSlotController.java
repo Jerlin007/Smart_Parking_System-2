@@ -9,8 +9,6 @@ import com.parking.repository.ParkingSlotRepository;
 import com.parking.security.SecurityHelper;
 import com.parking.service.ParkingSlotService;
 
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import com.parking.service.ParkingLotService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
-@SecurityRequirement(name = "BearerAuth")
-@Tag(
-        name = "Parking Slot Management APIs",
-        description = "APIs for managing parking slots, availability and slot types"
-    )
 @RestController
 @RequestMapping("/api/slots")
 @RequiredArgsConstructor
@@ -80,6 +71,25 @@ public class ParkingSlotController {
                 .stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
+    }
+
+    @PostMapping
+    public ParkingSlotDTO createSlot(@Valid @RequestBody ParkingSlotDTO dto) {
+        if (!securityHelper.isAdmin()) {
+            throw new RuntimeException("Only admins can create parking slots");
+        }
+
+        ParkingLot lot = dto.getLotId() != null ? lotService.getLot(dto.getLotId()) : null;
+
+        ParkingSlot slot = ParkingSlot.builder()
+                .slotNumber(dto.getSlotNumber())
+                .slotType(dto.getSlotType())
+                .status(SlotStatus.AVAILABLE)
+                .floorNumber(dto.getFloorNumber())
+                .parkingLot(lot)
+                .build();
+
+        return convertToDTO(slotService.addSlot(slot));
     }
 
     @PutMapping("/{id}")

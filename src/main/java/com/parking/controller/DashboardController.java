@@ -5,7 +5,6 @@ import com.parking.entity.*;
 import com.parking.enums.*;
 import com.parking.repository.*;
 import com.parking.security.SecurityHelper;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Tag(name = "Dashboard APIs", description = "Dashboard statistics and analytics")
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -55,11 +53,11 @@ public class DashboardController {
                 .collect(Collectors.groupingBy(Vehicle::getVehicleType, Collectors.counting()));
 
         List<RevenueDataPoint> revenueTrend = buildRevenueTrend(bills, transactions);
-        List<SlotUtilizationData> slotUtilization = Arrays.asList(
+        List<SlotUtilizationData> slotUtilization = new ArrayList<>(Arrays.asList(
                 new SlotUtilizationData("Available", availableSlots, "#10b981"),
                 new SlotUtilizationData("Occupied", occupiedSlots, "#ef4444"),
                 new SlotUtilizationData("Reserved", reservedSlots, "#f59e0b")
-        );
+        ));
         slotUtilization.removeIf(s -> s.getValue() <= 0);
 
         return AdminDashboardDTO.builder()

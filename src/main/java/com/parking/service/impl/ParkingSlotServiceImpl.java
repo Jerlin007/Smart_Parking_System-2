@@ -2,10 +2,13 @@ package com.parking.service.impl;
 
 import com.parking.entity.ParkingLot;
 import com.parking.entity.ParkingSlot;
+import com.parking.entity.Reservation;
+import com.parking.enums.ReservationStatus;
 import com.parking.enums.SlotStatus;
 import com.parking.enums.SlotType;
 import com.parking.exception.ResourceNotFoundException;
 import com.parking.repository.ParkingSlotRepository;
+import com.parking.repository.ReservationRepository;
 import com.parking.service.ParkingSlotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,7 @@ import java.util.List;
 public class ParkingSlotServiceImpl implements ParkingSlotService {
 
     private final ParkingSlotRepository slotRepository;
+    private final ReservationRepository reservationRepository;
 
     @Override
     public ParkingSlot addSlot(ParkingSlot slot) {
@@ -81,6 +85,12 @@ public class ParkingSlotServiceImpl implements ParkingSlotService {
         if (slot.getStatus() == SlotStatus.OCCUPIED) {
             throw new RuntimeException("Cannot delete occupied slot");
         }
+
+        List<Reservation> reservations = reservationRepository.findByParkingSlot(slot);
+        if (!reservations.isEmpty()) {
+            reservationRepository.deleteAll(reservations);
+        }
+        reservationRepository.flush();
 
         slotRepository.delete(slot);
     }

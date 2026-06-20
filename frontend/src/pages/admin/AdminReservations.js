@@ -2,20 +2,15 @@ import { useState, useEffect } from 'react';
 import { reservationAPI } from '../../services/api';
 import DataTable from '../../components/ui/DataTable';
 import StatusBadge from '../../components/ui/StatusBadge';
-import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import Breadcrumb from '../../components/ui/Breadcrumb';
 import EmptyState from '../../components/ui/EmptyState';
 import ErrorState from '../../components/ui/ErrorState';
-import { FiCalendar, FiXCircle } from 'react-icons/fi';
-import toast from 'react-hot-toast';
+import { FiCalendar } from 'react-icons/fi';
 
 export default function AdminReservations() {
   const [reservations, setReservations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [cancelConfirm, setCancelConfirm] = useState(false);
-  const [selectedReservation, setSelectedReservation] = useState(null);
-  const [saving, setSaving] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
 
   useEffect(() => {
@@ -36,21 +31,6 @@ export default function AdminReservations() {
     }
   };
 
-  const handleCancel = async () => {
-    if (!selectedReservation) return;
-    setSaving(true);
-    try {
-      await reservationAPI.cancel(selectedReservation.reservationId || selectedReservation.id);
-      toast.success('Reservation cancelled');
-      setCancelConfirm(false);
-      loadReservations();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to cancel reservation');
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const filteredReservations = statusFilter
     ? reservations.filter(r => r.status === statusFilter)
     : reservations;
@@ -63,17 +43,6 @@ export default function AdminReservations() {
     { header: 'Start Time', accessor: 'startTime', cell: (row) => row.startTime ? new Date(row.startTime).toLocaleString() : '—' },
     { header: 'End Time', accessor: 'endTime', cell: (row) => row.endTime ? new Date(row.endTime).toLocaleString() : '—' },
     { header: 'Status', accessor: 'status', cell: (row) => <StatusBadge status={row.status} /> },
-    {
-      header: 'Actions',
-      accessor: 'actions',
-      cell: (row) => (
-        row.status !== 'CANCELLED' ? (
-          <button onClick={(e) => { e.stopPropagation(); setSelectedReservation(row); setCancelConfirm(true); }} className="btn-ghost p-1.5 text-red-500" title="Cancel">
-            <FiXCircle className="h-3.5 w-3.5" />
-          </button>
-        ) : null
-      ),
-    },
   ];
 
   if (error) return <ErrorState message={error} onRetry={loadReservations} />;
@@ -104,16 +73,6 @@ export default function AdminReservations() {
       ) : (
         <DataTable columns={columns} data={filteredReservations} loading={loading} searchable searchPlaceholder="Search reservations..." />
       )}
-
-      <ConfirmDialog
-        open={cancelConfirm}
-        onClose={() => setCancelConfirm(false)}
-        onConfirm={handleCancel}
-        title="Cancel Reservation"
-        message={`Cancel reservation for slot ${selectedReservation?.slotNumber}? This will free up the slot.`}
-        loading={saving}
-        variant="danger"
-      />
     </div>
   );
 }

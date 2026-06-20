@@ -1,6 +1,7 @@
 package com.parking.service.impl;
 
 import com.parking.entity.*;
+import com.parking.enums.Role;
 import com.parking.exception.ResourceNotFoundException;
 import com.parking.repository.*;
 import com.parking.service.UserService;
@@ -42,6 +43,10 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
+
+        if (user.getRole() == Role.ROLE_ADMIN) {
+            throw new RuntimeException("Default admin account cannot be deleted");
+        }
 
         if (user.getVehicles() != null) {
             for (Vehicle vehicle : user.getVehicles()) {
@@ -87,7 +92,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id : " + id));
         user.setUsername(updated.getUsername());
         user.setEmail(updated.getEmail());
-        user.setRole(updated.getRole());
         return userRepository.save(user);
     }
 }

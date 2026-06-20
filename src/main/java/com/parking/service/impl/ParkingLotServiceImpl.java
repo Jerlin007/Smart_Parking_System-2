@@ -2,11 +2,14 @@ package com.parking.service.impl;
 
 import com.parking.entity.ParkingLot;
 import com.parking.entity.ParkingSlot;
+import com.parking.entity.Reservation;
+import com.parking.enums.ReservationStatus;
 import com.parking.enums.SlotStatus;
 import com.parking.enums.SlotType;
 import com.parking.exception.ResourceNotFoundException;
 import com.parking.repository.ParkingLotRepository;
 import com.parking.repository.ParkingSlotRepository;
+import com.parking.repository.ReservationRepository;
 import com.parking.service.ParkingLotService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ public class ParkingLotServiceImpl implements ParkingLotService {
 
     private final ParkingLotRepository lotRepository;
     private final ParkingSlotRepository slotRepository;
+    private final ReservationRepository reservationRepository;
 
     @Override
     @Transactional
@@ -69,6 +73,14 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         if (hasActiveSlots) {
             throw new RuntimeException("Cannot delete lot with active slots");
         }
+
+        for (ParkingSlot s : slots) {
+            List<Reservation> reservations = reservationRepository.findByParkingSlot(s);
+            if (!reservations.isEmpty()) {
+                reservationRepository.deleteAll(reservations);
+            }
+        }
+        reservationRepository.flush();
 
         slotRepository.deleteAll(slots);
         lotRepository.delete(lot);
@@ -127,7 +139,38 @@ public class ParkingLotServiceImpl implements ParkingLotService {
             }
         }
 
+        List<ParkingSlot> toRemove = new ArrayList<>();
         List<ParkingSlot> newSlots = new ArrayList<>();
+
+        if (targetCar < existingCar) {
+            existing.stream()
+                    .filter(s -> s.getSlotType() == SlotType.CAR)
+                    .skip(targetCar)
+                    .forEach(toRemove::add);
+        }
+        if (targetBike < existingBike) {
+            existing.stream()
+                    .filter(s -> s.getSlotType() == SlotType.BIKE)
+                    .skip(targetBike)
+                    .forEach(toRemove::add);
+        }
+        if (targetEv < existingEv) {
+            existing.stream()
+                    .filter(s -> s.getSlotType() == SlotType.EV)
+                    .skip(targetEv)
+                    .forEach(toRemove::add);
+        }
+
+        if (!toRemove.isEmpty()) {
+            for (ParkingSlot s : toRemove) {
+                List<Reservation> reservations = reservationRepository.findByParkingSlot(s);
+                if (!reservations.isEmpty()) {
+                    reservationRepository.deleteAll(reservations);
+                }
+            }
+            reservationRepository.flush();
+            slotRepository.deleteAll(toRemove);
+        }
 
         for (int i = (int) existingCar + 1; i <= targetCar; i++) {
             newSlots.add(ParkingSlot.builder()
