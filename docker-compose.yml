@@ -55,6 +55,31 @@ services:
     networks:
       - parking-network
 
+  # ========================
+  # React Frontend
+  # ========================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: ""
+    image: smart-parking-frontend:latest
+    container_name: smart-parking-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - parking-network
+
 volumes:
   mysql_data:
     driver: local
