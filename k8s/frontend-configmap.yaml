@@ -5,6 +5,11 @@ metadata:
   namespace: parking-system
 data:
   nginx.conf: |
+    map $request_method $options_response_code {
+        default 0;
+        OPTIONS 204;
+    }
+
     server {
         listen 80;
         server_name localhost;
@@ -18,13 +23,10 @@ data:
         add_header Access-Control-Allow-Credentials "true" always;
         add_header Access-Control-Expose-Headers "Authorization, Content-Type" always;
 
-        if ($request_method = OPTIONS) {
-            add_header Content-Length 0;
-            add_header Content-Type text/plain;
-            return 204;
-        }
-
         location /auth/ {
+            if ($options_response_code) {
+                return 204;
+            }
             proxy_pass http://backend-service:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -36,6 +38,9 @@ data:
         }
 
         location /api/ {
+            if ($options_response_code) {
+                return 204;
+            }
             proxy_pass http://backend-service:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -47,6 +52,9 @@ data:
         }
 
         location /actuator/ {
+            if ($options_response_code) {
+                return 204;
+            }
             proxy_pass http://backend-service:8080;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
